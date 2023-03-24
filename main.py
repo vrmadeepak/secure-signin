@@ -12,8 +12,8 @@ def register():
     add_user(username, password, email, phone)
     # conn = get_conn()
 
-def login():
-    username = validate_username(input("Enter username: "))
-    password = validate_password(input("Enter password: "))
+# def login():
+#     username = validate_username(input("Enter username: "))
+#     password = validate_password(input("Enter password: "))
 
-    validate_user(username, password)
+#     validate_user(username, password)
