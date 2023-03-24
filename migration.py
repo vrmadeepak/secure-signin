@@ -19,7 +19,7 @@ class Migration:
 
         cur.execute(f'''DROP DATABASE IF EXISTS {DB["database"]}''')
         cur.execute(f'''CREATE DATABASE {DB["database"]}''')
-        cur.execute(f'''SHOW DATABASES''')
+        # cur.execute(f'''SHOW DATABASES''')
         cur.execute(f'''USE {DB["database"]}''')
         print(f'USING DB {DB["database"]}')
         self.db = f'{DB["database"]}'
@@ -33,7 +33,7 @@ class Migration:
         cur = conn.cursor()
 
         query = """
-            CREATE TABLE user (
+            CREATE TABLE users (
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 username VARCHAR(50) NOT NULL,
                 password VARCHAR(128) NOT NULL,
