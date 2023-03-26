@@ -25,11 +25,9 @@ def get_user(username: str) -> tuple:
         res = cur.fetchall()
         cur.close()
         return res
-    
-# def add_new_user(username: str, password: str, email: str, phone: str):
-    
 
 def validate_user(username, password):
+    # TODO: why are we using validate_user...
     with get_conn() as conn:
         cur = conn.cursor()
 
@@ -76,7 +74,7 @@ def validate_password(password: str) -> str:
     if password:
         password = hashlib.sha512(password.encode())
         return password.hexdigest()
-    raise ValueError('Enter a Valid Password!')
+    raise ValueError('Password cannot be empty!')
     
 def validate_username(username: str) -> str:
     """
@@ -133,3 +131,6 @@ def login(username, password):
         if res:
             return res[0]
     raise ValueError('Incorrect Password!')
+
+
+# TODO: SESSION FLOW - WHEN DID USER LOGIN, LAST_LOGIN ETC...
