@@ -1,6 +1,8 @@
 from settings import DATABASES as DB
 import pymysql
 import hashlib
+from datetime import datetime
+import uuid
 
 def get_conn() -> object:
     """
@@ -13,18 +15,73 @@ def get_conn() -> object:
             database=DB["database"]
         )
 
-def get_user(username: str) -> tuple:
+def get_user(user_id: int = None, username: str = None) -> tuple:
     with get_conn() as conn:
         cur = conn.cursor()
+        if user_id:
+            cond = f"id = {user_id}"
+        elif username:
+            cond = f"username = '{username}'"
         cur.execute(
             f'''
-            SELECT username from users
-            WHERE username = '{username}'
+            SELECT id, username, email, phone FROM users
+            WHERE {cond}
             '''
         )
         res = cur.fetchall()
         cur.close()
-        return res
+        if res:
+            return res[0]
+
+def create_session(user_id):
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            f'''
+            INSERT INTO sessions (data, user_id, created_at, updated_at)
+            VALUES ('{uuid.uuid4()}', {user_id}, '{datetime.now()}', '{datetime.now()}')
+            '''
+        )
+        conn.commit()
+        cur.close()
+
+def update_session(user_id):
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            f'''
+            UPDATE sessions 
+            SET data='{uuid.uuid4()}', updated_at='{datetime.now()}'
+            WHERE user_id={user_id}
+            '''
+        )
+        cur.close()
+
+def get_session():
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            f'''
+            SELECT user_id from sessions
+            '''
+        )
+
+        res = cur.fetchall()
+        cur.close()
+        if res:
+            return res[0][0]
+
+def delete_session(user_id):
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            f'''
+            DELETE FROM sessions
+            WHERE user_id = {user_id}
+            '''
+        )
+        cur.close()
+        conn.commit()
 
 def validate_user(username, password):
     # TODO: why are we using validate_user...
@@ -113,24 +170,32 @@ def register(username, password, email, phone):
                 VALUES ('{username}', '{password}', '{email}', '{phone}')
                 '''
             )
-        cur.close()
         conn.commit()
-    return (username, email, phone)
+        cur.close()
+        
+        res = get_user(username=username)
+        if res:
+            create_session(res[0])
+            return res
     
 def login(username, password):
     with get_conn() as conn:
         cur = conn.cursor()
         cur.execute(
             f'''
-            SELECT username, email, phone FROM users
+            SELECT id, username, email, phone FROM users
             WHERE username='{username}' AND password='{password}'
             '''
         )
         res = cur.fetchall()
         cur.close()
         if res:
+            create_session(res[0][0])
             return res[0]
     raise ValueError('Incorrect Password!')
 
-
+def logout(user_id):
+    with get_conn() as conn:
+        cur = conn.cursor()
+        
 # TODO: SESSION FLOW - WHEN DID USER LOGIN, LAST_LOGIN ETC...

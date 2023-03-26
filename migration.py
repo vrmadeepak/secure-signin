@@ -32,7 +32,8 @@ class Migration:
         conn = self.get_conn(database=self.db)
         cur = conn.cursor()
 
-        query = """
+        cur.execute(
+            '''
             CREATE TABLE users (
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 username VARCHAR(50) NOT NULL,
@@ -40,9 +41,21 @@ class Migration:
                 email VARCHAR(50),
                 phone VARCHAR(13)
             )
-        """
-        
-        cur.execute(query)
+            '''
+        )
+
+        cur.execute(
+            '''
+            CREATE TABLE sessions (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                data VARCHAR(36) UNIQUE NOT NULL,
+                user_id INT UNIQUE NOT NULL,
+                created_at DATETIME NOT NULL,
+                updated_at DATETIME NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+            '''
+        )
         cur.close()
         conn.close()
         

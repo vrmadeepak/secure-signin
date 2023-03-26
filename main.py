@@ -1,17 +1,26 @@
 from operations import *
+import traceback
 
-print('''
-1. Sign Up
-2. Login
-''')
 
-try:
+
+user_id = get_session()
+if user_id:
+    user = get_user(user_id=user_id)
+else:
     user = None
-    op = int(input('Enter: '))
+    print(
+        'What do you want to do?',
+        '1. Sign Up',
+        '2. Login',
+        sep='\n'
+    )
+
+if not user:    
+    op = int(input('> '))
 
     if op == 1:
         username = validate_username(input("Enter username: "))
-        if get_user(username):
+        if get_user(username=username):
             raise ValueError('Username already exists!')
         
         user = register(
@@ -22,7 +31,7 @@ try:
         )
     elif op == 2:
         username = validate_username(input("Enter username: "))
-        if not get_user(username):
+        if not get_user(username=username):
             raise ValueError('Username doesn\'t exist!')
         
         user = login(
@@ -31,8 +40,21 @@ try:
         )
     else:
         raise ValueError('Enter a valid option.')
-except Exception as ex:
-    print(ex)
+# except Exception as ex:
+#     # traceback.print_exc()
+#     print(ex)
 
 if user:
     print(user)
+    print(
+        'What do you want to do?', 
+        '1. Logout',
+        '2. Edit Profile',
+        sep='\n'
+    )
+    op = int(input('> '))
+    if op == 1:
+        delete_session(user_id)
+        del user
+    elif op == 2:
+        print('')
