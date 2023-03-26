@@ -26,33 +26,8 @@ def get_user(username: str) -> tuple:
         cur.close()
         return res
     
-def add_user(username: str, password: str, email: str, phone: str):
-    with get_conn() as conn:
-        cur = conn.cursor()
-
-        if not email:
-            cur.execute(
-                f'''
-                INSERT INTO users (username, password, phone)
-                VALUES ('{username}', '{password}', '{phone}')
-                '''
-            )
-        elif not phone:
-            cur.execute(
-                f'''
-                INSERT INTO users (username, password, email)
-                VALUES ('{username}', '{password}', '{email}')
-                '''
-            )
-        else:
-            cur.execute(
-                f'''
-                INSERT INTO users (username, password, email, phone)
-                VALUES ('{username}', '{password}', '{email}', '{phone}')
-                '''
-            )
-        cur.close()
-        conn.commit()
+# def add_new_user(username: str, password: str, email: str, phone: str):
+    
 
 def validate_user(username, password):
     with get_conn() as conn:
@@ -109,7 +84,52 @@ def validate_username(username: str) -> str:
     """
     username = username.strip()
     if username:
-        if get_user(username):
-            raise ValueError('User already Exists!')
         return username
     raise ValueError('Username cannot be empty!')
+
+def register(username, password, email, phone):
+    if not (phone or email):
+        raise ValueError('Phone Number or Email is required')
+    
+    with get_conn() as conn:
+        cur = conn.cursor()
+
+        if not email:
+            cur.execute(
+                f'''
+                INSERT INTO users (username, password, phone)
+                VALUES ('{username}', '{password}', '{phone}')
+                '''
+            )
+        elif not phone:
+            cur.execute(
+                f'''
+                INSERT INTO users (username, password, email)
+                VALUES ('{username}', '{password}', '{email}')
+                '''
+            )
+        else:
+            cur.execute(
+                f'''
+                INSERT INTO users (username, password, email, phone)
+                VALUES ('{username}', '{password}', '{email}', '{phone}')
+                '''
+            )
+        cur.close()
+        conn.commit()
+    return (username, email, phone)
+    
+def login(username, password):
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            f'''
+            SELECT username, email, phone FROM users
+            WHERE username='{username}' AND password='{password}'
+            '''
+        )
+        res = cur.fetchall()
+        cur.close()
+        if res:
+            return res[0]
+    raise ValueError('Incorrect Password!')
